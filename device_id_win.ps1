@@ -6,7 +6,7 @@ function Write-Log {
     "$time - $Message" | Out-File -FilePath $log_file -Append
     Write-Host $Message
 }
-
+ 
 try {
     Write-Log "开始更新Cursor设备ID..."
     
@@ -18,41 +18,41 @@ try {
     $storage_json_path = "$env:APPDATA\Cursor\User\globalStorage\storage.json"
     
     if (-not (Test-Path $machine_id_path) -or -not (Test-Path $storage_json_path)) {
-        throw "必需的Cursor配置文件不存在"
+        throw "No Custom Cursor Config found"
     }
     
     $backup_time = Get-Date -Format "yyyyMMddHHmmss"
     Copy-Item $machine_id_path "$machine_id_path.backup_$backup_time" -ErrorAction Stop
     Copy-Item $storage_json_path "$storage_json_path.backup_$backup_time" -ErrorAction Stop
-    Write-Log "已创建配置文件备份"
+    Write-Log "Configuration file backup created."
     
     $new_machine_id | Out-File -FilePath $machine_id_path -Encoding UTF8 -NoNewline
-    Write-Log "已更新 machineid"
+    Write-Log "Updated machineid"
     
     $content = Get-Content $storage_json_path -Raw | ConvertFrom-Json
     $content.'telemetry.devDeviceId' = $new_dev_device_id
     $content.'telemetry.macMachineId' = $new_mac_machine_id
     $content | ConvertTo-Json -Depth 100 | Out-File $storage_json_path -Encoding UTF8
-    Write-Log "已更新 storage.json"
+    Write-Log "Updated storage.json"
     
-    Write-Log "所有更新已完成"
+    Write-Log "Update Complete"
     
-    Write-Log "新的设备ID:"
+    Write-Log "New Device ID:"
     Write-Log "Machine ID: $new_machine_id"
     Write-Log "Dev Device ID: $new_dev_device_id"
     Write-Log "Mac Machine ID: $new_mac_machine_id"
     
 } catch {
-    Write-Log "发生错误: $_"
+    Write-Log "error: $_"
     
-    $restore = Read-Host "是否恢复到最近的备份? (Y/N)"
+    $restore = Read-Host "restore backup? (Y/N)"
     if ($restore -eq 'Y') {
         try {
             Copy-Item "$machine_id_path.backup_$backup_time" $machine_id_path -ErrorAction Stop
             Copy-Item "$storage_json_path.backup_$backup_time" $storage_json_path -ErrorAction Stop
-            Write-Log "已恢复到备份版本"
+            Write-Log "restore successful"
         } catch {
-            Write-Log "恢复备份失败: $_"
+            Write-Log "restoration failed: $_"
         }
     }
     exit 1
