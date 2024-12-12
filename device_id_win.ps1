@@ -8,7 +8,7 @@ function Write-Log {
 }
  
 try {
-    Write-Log "开始更新Cursor设备ID..."
+    Write-Log "Device ID..."
     
     $new_machine_id = [guid]::NewGuid().ToString().ToLower()
     $new_dev_device_id = [guid]::NewGuid().ToString().ToLower()
